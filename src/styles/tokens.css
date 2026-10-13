@@ -1,0 +1,53 @@
+:root {
+  --color-bg: #080808;
+  --color-bg-elevated: #121313;
+
+  --color-background: #080808;
+  --color-surface: #0d0e0e;
+  --color-surface-elevated: #121313;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #d1c7bd;
+  --color-text-muted: #8f8a85;
+
+  --color-accent: #ff6600;
+  --color-accent-start: #ff8a2a;
+  --color-accent-end: #ff4d1c;
+  --color-accent-hover: #ff7a1a;
+  --color-accent-glow: #d75200;
+
+  --color-highlight: #ffb800;
+  --color-highlight-core: #ffe57f;
+
+  --color-success: #5fbf68;
+  --color-warning: #d99a32;
+  --color-danger: #e55353;
+
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-border-accent: rgba(255, 102, 0, 0.35);
+
+  --font-display: "Inter", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  --shadow-card:
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 12px 40px rgba(0, 0, 0, 0.3);
+
+  --shadow-accent:
+    0 0 24px rgba(255, 102, 0, 0.18);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 999px;
+
+  --space-section: clamp(64px, 10vw, 140px);
+
+  --sidebar-width: 204px;
+  --content-max-width: 1440px;
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+}

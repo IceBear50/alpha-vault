@@ -1,0 +1,1617 @@
+==================================================
+PACKAGE
+==================================================
+{
+  "name": "alpha-vault-frontend",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:watch": "vitest",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manish-bhargava/alpha-vault-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Manish-bhargava/alpha-vault-frontend/issues"
+  },
+  "homepage": "https://github.com/Manish-bhargava/alpha-vault-frontend#readme",
+  "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "@react-three/postprocessing": "^3.1.0",
+    "@tanstack/react-query": "^5.102.3",
+    "@tanstack/react-table": "^9.1.2",
+    "axios": "^1.19.0",
+    "date-fns": "^4.4.0",
+    "hls.js": "^1.7.1",
+    "lucide-react": "^1.34.0",
+    "postprocessing": "^6.39.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-hook-form": "^7.86.0",
+    "react-router-dom": "^7.18.2",
+    "recharts": "^3.10.1",
+    "three": "^0.185.1",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/eslint-plugin-query": "^5.102.3",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/node": "^26.3.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "@types/three": "^0.185.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.68.0",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  }
+}
+
+==================================================
+MAIN
+==================================================
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+
+import "@/styles/index.css";
+
+import { AppProviders } from "@/app/providers/AppProviders";
+import { AppRouter } from "@/app/router/AppRouter";
+
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <AppProviders>
+      <AppRouter />
+    </AppProviders>
+  </StrictMode>,
+);
+
+==================================================
+APP PROVIDERS
+==================================================
+import type { PropsWithChildren } from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+export function AppProviders({ children }: PropsWithChildren) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+}
+
+==================================================
+APP ROUTER
+==================================================
+import { RouterProvider } from "react-router-dom";
+
+import { router } from "@/app/router/routes/router";
+
+export function AppRouter() {
+  return <RouterProvider router={router} />;
+}
+
+==================================================
+ROUTES
+==================================================
+import { createBrowserRouter } from "react-router-dom";
+import LandingPage from "@/app/page";
+import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
+import { RewardsPage } from "@/features/rewards/pages/RewardsPage";
+import { DashboardLayout } from "@/app/layouts/DashboardLayout";
+
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <LandingPage />,
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <DashboardLayout>
+        <DashboardPage />
+      </DashboardLayout>
+    ),
+  },
+  {
+    path: "/rewards",
+    element: (
+      <DashboardLayout>
+        <RewardsPage />
+      </DashboardLayout>
+    ),
+  },
+]);
+
+==================================================
+DASHBOARD LAYOUT
+==================================================
+import type { PropsWithChildren } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Gift, LayoutDashboard } from "lucide-react";
+import { Sidebar } from "./Sidebar";
+
+const navigation = [
+  {
+    label: "Overview",
+    href: "/dashboard",
+    icon: <LayoutDashboard />,
+  },
+  {
+    label: "Rewards",
+    href: "/rewards",
+    icon: <Gift />,
+  },
+];
+
+const user = {
+  name: "John Doe",
+  initials: "JD",
+};
+
+export function DashboardLayout({ children }: PropsWithChildren) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-[#080808] text-white">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[204px] lg:block">
+        <Sidebar
+          navigation={navigation}
+          user={user}
+          activeHref={location.pathname}
+          onNavigate={(href) => navigate(href)}
+        />
+      </aside>
+
+      <main className="min-h-screen lg:pl-[204px]">
+        <div className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8">
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+==================================================
+NAVIGATION
+==================================================
+import type { SidebarNavItem } from "./Sidebar";
+import {
+  AnalyticsIcon,
+  HelpIcon,
+  OverviewIcon,
+  RewardsIcon,
+  SettingsIcon,
+  StatementsIcon,
+  TransactionsIcon,
+} from "./SidebarIcons";
+
+export const dashboardNavigation: SidebarNavItem[] = [
+  {
+    label: "Overview",
+    href: "/dashboard",
+    icon: <OverviewIcon />,
+  },
+  {
+    label: "Transactions",
+    href: "/dashboard/transactions",
+    icon: <TransactionsIcon />,
+  },
+  {
+    label: "Analytics",
+    href: "/dashboard/analytics",
+    icon: <AnalyticsIcon />,
+  },
+  {
+    label: "Rewards",
+    href: "/dashboard/rewards",
+    icon: <RewardsIcon />,
+  },
+  {
+    label: "Statements",
+    href: "/dashboard/statements",
+    icon: <StatementsIcon />,
+  },
+  {
+    label: "Settings",
+    href: "/dashboard/settings",
+    icon: <SettingsIcon />,
+  },
+  {
+    label: "Help & Support",
+    href: "/dashboard/help",
+    icon: <HelpIcon />,
+  },
+];
+
+==================================================
+API CLIENT
+==================================================
+import axios from "axios";
+
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api/v1",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 10_000,
+});
+
+export default apiClient;
+
+==================================================
+QUERY LIBRARY
+==================================================
+src/lib/query/.gitkeep
+
+----- src/lib/query/.gitkeep -----
+
+==================================================
+DASHBOARD API
+==================================================
+src/features/dashboard/api/dashboardApi.ts
+
+----- src/features/dashboard/api/dashboardApi.ts -----
+import apiClient from "@/lib/api/client/apiClient";
+import type {
+  RedeemRewardRequest,
+  RedeemRewardResponse,
+  RewardBalanceResponse,
+  RewardsCatalogResponse,
+  SpendAnalyticsQueryParams,
+  SpendAnalyticsResponse,
+  TransactionQueryParams,
+  TransactionsResponse,
+} from "../types/api";
+
+export async function getTransactions(
+  params?: TransactionQueryParams,
+): Promise<TransactionsResponse> {
+  const response = await apiClient.get<TransactionsResponse>(
+    "/transactions",
+    {
+      params,
+    },
+  );
+
+  return response.data;
+}
+
+export async function getSpendAnalytics(
+  params?: SpendAnalyticsQueryParams,
+): Promise<SpendAnalyticsResponse> {
+  const response = await apiClient.get<SpendAnalyticsResponse>(
+    "/analytics/spend",
+    {
+      params,
+    },
+  );
+
+  return response.data;
+}
+
+export async function getRewardBalance(): Promise<RewardBalanceResponse> {
+  const response = await apiClient.get<RewardBalanceResponse>(
+    "/rewards/balance",
+  );
+
+  return response.data;
+}
+
+export async function getRewardsCatalog(): Promise<RewardsCatalogResponse> {
+  const response = await apiClient.get<RewardsCatalogResponse>(
+    "/rewards/catalog",
+  );
+
+  return response.data;
+}
+
+export async function redeemReward(
+  payload: RedeemRewardRequest,
+): Promise<RedeemRewardResponse> {
+  const response = await apiClient.post<RedeemRewardResponse>(
+    "/rewards/redeem",
+    payload,
+  );
+
+  return response.data;
+}
+src/features/dashboard/hooks/useTransactions.ts
+
+----- src/features/dashboard/hooks/useTransactions.ts -----
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getTransactions } from "../api/dashboardApi";
+import type { TransactionQueryParams } from "../types/api";
+
+export function useTransactions(params?: TransactionQueryParams) {
+  return useQuery({
+    queryKey: ["dashboard", "transactions", params],
+    queryFn: () => getTransactions(params),
+    // Keep showing the previous page's rows while the next page/filter/sort
+    // is fetching, instead of dropping into a loading state and unmounting
+    // the table every time the query key changes.
+    placeholderData: keepPreviousData,
+  });
+}
+src/features/dashboard/hooks/useRewardsCatalog.ts
+
+----- src/features/dashboard/hooks/useRewardsCatalog.ts -----
+import { useQuery } from "@tanstack/react-query";
+import { getRewardsCatalog } from "../api/dashboardApi";
+
+export const rewardsCatalogQueryKey = ["dashboard", "rewards-catalog"];
+
+export function useRewardsCatalog() {
+  return useQuery({
+    queryKey: rewardsCatalogQueryKey,
+    queryFn: getRewardsCatalog,
+  });
+}
+src/features/dashboard/hooks/useSpendAnalytics.ts
+
+----- src/features/dashboard/hooks/useSpendAnalytics.ts -----
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getSpendAnalytics } from "../api/dashboardApi";
+import type { SpendAnalyticsQueryParams } from "../types/api";
+
+export const spendAnalyticsQueryKey = (params?: SpendAnalyticsQueryParams) =>
+  ["dashboard", "spend-analytics", params] as const;
+
+/**
+ * Backs the top-line "Total spent" metric and any date-range-only view of
+ * spend. Per the API doc, /analytics/spend only accepts start_date/end_date
+ * — search/category/status/amount filters aren't supported here, so the
+ * charts that need to react to those derive from useTransactionsBulk
+ * instead (see utils/trend.ts).
+ */
+export function useSpendAnalytics(params?: SpendAnalyticsQueryParams) {
+  return useQuery({
+    queryKey: spendAnalyticsQueryKey(params),
+    queryFn: () => getSpendAnalytics(params),
+    // Keep the current numbers on screen while a new range is loading
+    // instead of flashing to empty state.
+    placeholderData: keepPreviousData,
+  });
+}
+src/features/dashboard/hooks/useRewardBalance.ts
+
+----- src/features/dashboard/hooks/useRewardBalance.ts -----
+import { useQuery } from "@tanstack/react-query";
+import { getRewardBalance } from "../api/dashboardApi";
+
+export const rewardBalanceQueryKey = ["dashboard", "reward-balance"];
+
+export function useRewardBalance() {
+  return useQuery({
+    queryKey: rewardBalanceQueryKey,
+    queryFn: getRewardBalance,
+  });
+}
+src/features/dashboard/hooks/useTransactionsBulk.ts
+
+----- src/features/dashboard/hooks/useTransactionsBulk.ts -----
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getTransactions } from "../api/dashboardApi";
+
+// Large enough to cover realistic personal transaction volume for a date
+// range in one request, small enough to stay a bounded, predictable payload
+// rather than truly unbounded ("fetch everything, however much that is").
+const BULK_FETCH_LIMIT = 500;
+
+/**
+ * Fetches every transaction in a date range in one bulk page, so the charts
+ * can be filtered/aggregated client-side (search, category, status, amount)
+ * without re-hitting the network on every keystroke — only the date range
+ * (driven by the period selector) changes the query key here. This is
+ * intentionally separate from useTransactions, which stays page-by-page for
+ * the table itself.
+ */
+export function useTransactionsBulk(params: {
+  start_date?: string;
+  end_date?: string;
+}) {
+  return useQuery({
+    queryKey: ["dashboard", "transactions-bulk", params],
+    queryFn: () =>
+      getTransactions({
+        ...params,
+        page: 1,
+        limit: BULK_FETCH_LIMIT,
+        sort_by: "timestamp",
+        sort_order: "asc",
+      }),
+    // Keep the previous range's data visible while a new date range loads,
+    // instead of the charts flashing empty.
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+}
+src/features/dashboard/types/api.ts
+
+----- src/features/dashboard/types/api.ts -----
+export type TransactionStatus = "SUCCESS" | "FAILED" | "PENDING";
+
+export type PaymentMethod =
+  | "Credit Card"
+  | "Debit Card"
+  | "UPI"
+  | "Netbanking"
+  | "Wallet";
+
+export type Transaction = {
+  id: string;
+  timestamp: string;
+  merchant: string;
+  category: string;
+  amount: number;
+  currency: string;
+  status: TransactionStatus;
+  payment_method: PaymentMethod;
+};
+
+/**
+ * Matches the documented /api/v1/transactions response exactly:
+ * { items, total, page, page_count }. There is no `limit` echoed back and
+ * no `total_pages` — callers that need the page size already know it (they
+ * sent it), and `page_count` is the doc's name for total pages.
+ */
+export type TransactionsResponse = {
+  items: Transaction[];
+  total: number;
+  page: number;
+  page_count: number;
+};
+
+export type TransactionQueryParams = {
+  page?: number;
+  limit?: number;
+  category?: string;
+  status?: string;
+  payment_method?: string;
+  search?: string;
+  start_date?: string;
+  end_date?: string;
+  sort_by?: string;
+  sort_order?: "asc" | "desc";
+};
+
+/**
+ * The documented /analytics/spend endpoint only accepts a date range — no
+ * search, category, status, or amount filters. Those filters stay
+ * table-only; the trend/category charts are date-scoped and, for anything
+ * finer, derived client-side from the bulk transaction set (see
+ * useFilteredSummary in features/dashboard/utils).
+ */
+export type SpendAnalyticsQueryParams = {
+  start_date?: string;
+  end_date?: string;
+};
+
+export type CategoryBreakdownEntry = {
+  category: string;
+  total_amount: number;
+  transaction_count?: number;
+};
+
+export type MonthlyTrendEntry = {
+  month: string;
+  total_amount: number;
+  transaction_count?: number;
+};
+
+export type TopMerchantEntry = {
+  merchant: string;
+  total_amount: number;
+  transaction_count?: number;
+};
+
+/**
+ * Matches the documented /api/v1/analytics/spend response:
+ * { total_spend, category_breakdown, monthly_trends, top_merchants }.
+ * The previous total_transactions/successful_transactions/coins_earned
+ * fields aren't part of this response — those metric cards now derive
+ * from the bulk transaction set instead (see useFilteredSummary in
+ * features/dashboard/utils).
+ */
+export type SpendAnalyticsResponse = {
+  total_spend: number;
+  category_breakdown: CategoryBreakdownEntry[];
+  monthly_trends: MonthlyTrendEntry[];
+  top_merchants: TopMerchantEntry[];
+};
+
+export type RewardBalanceResponse = {
+  balance: number;
+};
+
+export type Reward = {
+  reward_id: number;
+  brand: string;
+  description: string;
+  coin_cost: number;
+};
+
+export type RewardsCatalogResponse = {
+  rewards: Reward[];
+};
+
+export type RedeemRewardRequest = {
+  reward_id: number;
+};
+
+export type RedeemRewardResponse = {
+  status: string;
+  coins_deducted: number;
+  remaining_balance: number;
+  voucher_code: string;
+};
+
+==================================================
+REWARDS API/TYPES/HOOKS
+==================================================
+src/features/rewards/api/.gitkeep
+
+----- src/features/rewards/api/.gitkeep -----
+src/features/rewards/hooks/.gitkeep
+
+----- src/features/rewards/hooks/.gitkeep -----
+src/features/rewards/types/.gitkeep
+
+----- src/features/rewards/types/.gitkeep -----
+
+==================================================
+REWARDS PAGES
+==================================================
+src/features/rewards/pages/.gitkeep
+
+----- src/features/rewards/pages/.gitkeep -----
+src/features/rewards/pages/RewardsPage.tsx
+
+----- src/features/rewards/pages/RewardsPage.tsx -----
+import { useEffect, useState } from "react";
+import {
+  fetchRewardBalance,
+  fetchRewardCatalog,
+  redeemReward,
+} from "../api";
+import type { RewardItem } from "../types";
+import { FilterTabs } from "../components/FilterTabs";
+import { RewardCard } from "../components/RewardCard";
+
+function StatsCards({
+  balance,
+  isLoading,
+  isError,
+}: {
+  balance: number | null;
+  isLoading: boolean;
+  isError: boolean;
+}) {
+  const safeBalance = Number(balance) || 0;
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="rounded-xl border border-gray-800 bg-[#111] p-5">
+        <p className="text-sm text-gray-400">Coin balance</p>
+
+        <p className="mt-2 text-2xl font-bold">
+          {isLoading
+            ? "—"
+            : isError
+              ? "Unavailable"
+              : safeBalance.toLocaleString("en-IN")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function RewardsPage() {
+  const [balance, setBalance] = useState<number | null>(null);
+  const [catalog, setCatalog] = useState<RewardItem[]>([]);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [redeemingId, setRedeemingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [balanceData, catalogData] = await Promise.all([
+          fetchRewardBalance(),
+          fetchRewardCatalog(),
+        ]);
+
+        setBalance(Number(balanceData.coin_balance) || 0);
+
+        setCatalog(catalogData.rewards);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load rewards data",
+        );
+      } finally {
+        setIsLoadingBalance(false);
+        setIsLoadingCatalog(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const handleRedeem = async (reward: RewardItem) => {
+    if (balance === null) {
+      return;
+    }
+
+    const coinCost = reward.cost_coins;
+    const previousBalance = balance;
+
+    if (coinCost > balance) {
+      setError("You do not have enough coins to redeem this reward.");
+      return;
+    }
+
+    setBalance((previous) => (previous ?? 0) - coinCost);
+    setRedeemingId(reward.id);
+    setError(null);
+
+    try {
+      await redeemReward(reward.id);
+
+      const [balanceData, catalogData] = await Promise.all([
+        fetchRewardBalance(),
+        fetchRewardCatalog(),
+      ]);
+
+      setBalance(balanceData.coin_balance);
+      setCatalog(catalogData.rewards);
+    } catch (err) {
+      setBalance(previousBalance);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Redemption failed. Balance restored.",
+      );
+    } finally {
+      setRedeemingId(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black p-8 text-white">
+      <div className="mb-8 mt-6">
+        <h1 className="text-3xl font-bold">Rewards</h1>
+
+        <p className="mt-2 text-gray-400">
+          Redeem your coins for exciting vouchers, cashback and more.
+        </p>
+      </div>
+
+      {error && (
+        <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
+          {error}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-6">
+        <StatsCards
+          balance={balance}
+          isLoading={isLoadingBalance}
+          isError={Boolean(error)}
+        />
+
+        <FilterTabs />
+
+        {isLoadingCatalog ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[...Array(8)].map((_, index) => (
+              <div
+                key={index}
+                className="h-64 animate-pulse rounded-xl border border-gray-800 bg-[#111]"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {catalog.map((reward) => (
+              <RewardCard
+                key={reward.id}
+                reward={reward}
+                onRedeem={handleRedeem}
+                isRedeeming={redeemingId === reward.id}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+==================================================
+REWARDS COMPONENTS
+==================================================
+src/features/rewards/components/RewardCard.tsx
+
+----- src/features/rewards/components/RewardCard.tsx -----
+import { useEffect, useState } from "react";
+import { fetchRewardBalance, fetchRewardCatalog, redeemReward } from "../api";
+import type { RewardItem } from "../types";
+import { FilterTabs } from "../components/FilterTabs";
+import { RecentRedemptions } from "../components/RecentRedemptions";
+
+export function RewardCard({
+  reward,
+  onRedeem,
+  isRedeeming,
+}: {
+  reward: RewardItem;
+  onRedeem: (reward: RewardItem) => void;
+  isRedeeming: boolean;
+}) {
+  const rewardData = reward as RewardItem & {
+    name?: string;
+    title?: string;
+    description?: string;
+  };
+  const label = rewardData.name || rewardData.title || "Reward";
+  const cost = Number(reward.cost_coins) || 0;
+
+  return (
+    <div className="p-5 bg-[#111] border border-gray-800 rounded-xl">
+      <h3 className="font-semibold">{label}</h3>
+      {rewardData.description && <p className="mt-2 text-sm text-gray-400">{rewardData.description}</p>}
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <span className="text-sm text-gray-400">{cost.toLocaleString()} coins</span>
+        <button
+          type="button"
+          onClick={() => onRedeem(reward)}
+          disabled={isRedeeming}
+          className="px-3 py-2 rounded-lg bg-white text-black text-sm font-medium disabled:opacity-50"
+        >
+          {isRedeeming ? "Redeeming…" : "Redeem"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StatsCards({ balance, isLoading, isError }: { balance: number | null; isLoading: boolean; isError: boolean; }) {
+  const safeBalance = Number(balance) || 0;
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="p-5 bg-[#111] border border-gray-800 rounded-xl">
+        <p className="text-sm text-gray-400">Coin balance</p>
+        <p className="mt-2 text-2xl font-bold">
+          {isLoading ? "—" : isError ? "Unavailable" : safeBalance.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function RewardsPage() {
+  const [balance, setBalance] = useState<number | null>(null);
+  const [catalog, setCatalog] = useState<RewardItem[]>([]);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [redeemingId, setRedeemingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [balanceData, catalogData] = await Promise.all([
+          fetchRewardBalance(),
+          fetchRewardCatalog(),
+        ]);
+        setBalance(Number(balanceData.coin_balance) || 0);
+        const rewardsData = Array.isArray(catalogData) ? catalogData : catalogData?.rewards;
+        setCatalog(Array.isArray(rewardsData) ? rewardsData : []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load rewards data");
+      } finally {
+        setIsLoadingBalance(false);
+        setIsLoadingCatalog(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const handleRedeem = async (reward: RewardItem) => {
+    if (balance === null) return;
+    const coinCost = Number(reward.cost_coins) || 0;
+    const previousBalance = balance;
+    setBalance(prev => (Number(prev) || 0) - coinCost);
+    setRedeemingId(reward.id);
+    setError(null);
+    try {
+      await redeemReward(reward.id);
+      const [balanceData, catalogData] = await Promise.all([
+        fetchRewardBalance(),
+        fetchRewardCatalog(),
+      ]);
+      setBalance(Number(balanceData.coin_balance) || 0);
+      const rewardsData = Array.isArray(catalogData) ? catalogData : catalogData?.rewards;
+      setCatalog(Array.isArray(rewardsData) ? rewardsData : []);
+    } catch (err) {
+      setBalance(previousBalance);
+      setError(err instanceof Error ? err.message : "Redemption failed. Balance restored.");
+    } finally {
+      setRedeemingId(null);
+    }
+  };
+
+  return (
+    <div className="p-8 bg-black text-white min-h-screen">
+      <div className="mt-6 mb-8">
+        <h1 className="text-3xl font-bold">Rewards</h1>
+        <p className="text-gray-400 mt-2">Redeem your coins for exciting vouchers, cashback and more.</p>
+      </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-9 flex flex-col gap-6">
+          <StatsCards balance={balance} isLoading={isLoadingBalance} isError={!!error} />
+          <FilterTabs />
+          {isLoadingCatalog ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-64 bg-[#111] border border-gray-800 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {catalog.map((reward) => (
+                <RewardCard key={reward.id} reward={reward} onRedeem={handleRedeem} isRedeeming={redeemingId === reward.id} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="col-span-12 lg:col-span-3">
+          <RecentRedemptions />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+src/features/rewards/components/.gitkeep
+
+----- src/features/rewards/components/.gitkeep -----
+src/features/rewards/components/RecentRedemptions.tsx
+
+----- src/features/rewards/components/RecentRedemptions.tsx -----
+export type RecentRedemption = {
+  id: string | number;
+  brand: string;
+  title?: string;
+  amount?: string;
+  cost: string;
+  date: string;
+  icon?: string;
+  status?: "success" | "pending" | "failed";
+};
+
+export type RecentRedemptionsProps = {
+  redemptions?: RecentRedemption[];
+  onViewAll?: () => void;
+};
+
+const statusStyles = {
+  success: {
+    label: "Success",
+    className: "bg-emerald-500/10 text-emerald-400",
+  },
+  pending: {
+    label: "Pending",
+    className: "bg-amber-500/10 text-amber-400",
+  },
+  failed: {
+    label: "Failed",
+    className: "bg-red-500/10 text-red-400",
+  },
+} as const;
+
+export function RecentRedemptions({
+  redemptions = [],
+  onViewAll,
+}: RecentRedemptionsProps) {
+  return (
+    <section className="h-fit overflow-hidden rounded-2xl border border-white/[0.08] bg-[#101010]">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+        <h2 className="text-sm font-semibold text-white">
+          Recent redemptions
+        </h2>
+
+        <button
+          type="button"
+          onClick={onViewAll}
+          className="text-xs font-medium text-[#FF6600] transition-colors hover:text-[#FF7A1A]"
+        >
+          View all
+        </button>
+      </div>
+
+      {redemptions.length === 0 ? (
+        <div className="px-5 py-8 text-center">
+          <p className="text-sm text-white/45">
+            No redemption history available.
+          </p>
+        </div>
+      ) : (
+        <div className="divide-y divide-white/[0.06]">
+          {redemptions.map((item) => {
+            const status = statusStyles[item.status ?? "success"];
+
+            return (
+              <article
+                key={item.id}
+                className="flex gap-3 px-5 py-4"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-black text-lg">
+                  {item.icon ?? item.brand.charAt(0).toUpperCase()}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-white">
+                    {item.title ?? `${item.brand} Voucher`}
+                  </p>
+
+                  {item.amount && (
+                    <p className="mt-0.5 text-xs text-white/70">
+                      {item.amount}
+                    </p>
+                  )}
+
+                  <p className="mt-1 text-[10px] text-white/35">
+                    {item.date}
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <span className="text-[10px] font-medium text-[#FF6600]">
+                    {item.cost}
+                  </span>
+
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[9px] font-medium ${status.className}`}
+                  >
+                    {status.label}
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}src/features/rewards/components/FilterTabs.tsx
+
+----- src/features/rewards/components/FilterTabs.tsx -----
+import { useState } from "react";
+
+const categories = ["All Rewards", "Vouchers", "Cashback", "Travel", "Food & Dining", "Shopping", "Entertainment"];
+
+export function FilterTabs() {
+  const [active, setActive] = useState("All Rewards");
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap gap-2">
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => setActive(category)}
+            className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${
+              active === category
+                ? "bg-[#FF6600] text-black"
+                : "bg-white/[0.03] text-gray-400 hover:text-white border border-white/10"
+            }`}
+          >
+            {category}
+          </button>
+        ))}
+      </div>
+      <select className="bg-[#111] border border-white/10 text-gray-300 text-xs px-3 py-2 rounded-lg outline-none focus:border-[#FF6600]/40">
+        <option>Sort by: Popular</option>
+      </select>
+    </div>
+  );
+}src/features/rewards/components/StateCards.tsx
+
+----- src/features/rewards/components/StateCards.tsx -----
+interface StatsCardsProps {
+  balance: number | null;
+  isLoading: boolean;
+  isError: boolean;
+}
+
+export function StatsCards({ balance, isLoading, isError }: StatsCardsProps) {
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      {/* Balance Card */}
+      <div className="bg-[#111] p-6 rounded-xl border border-gray-800">
+        <p className="text-sm text-gray-400">Your coin balance</p>
+        {isLoading ? (
+          <div className="h-8 w-32 bg-gray-800 animate-pulse rounded mt-2" />
+        ) : isError ? (
+          <p className="text-red-500 mt-2 text-lg font-bold">Error loading</p>
+        ) : (
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-3xl font-bold text-[#FF6600]">{balance?.toLocaleString() ?? 0}</span>
+            <span className="text-lg text-gray-400">coins</span>
+          </div>
+        )}
+        <p className="text-xs text-gray-500 mt-4">1 coin = ₹100 spent · Coins never expire</p>
+      </div>
+
+      {/* Monthly Earned Card (Mocked for UI consistency) */}
+      <div className="bg-[#111] p-6 rounded-xl border border-gray-800 relative overflow-hidden">
+        <p className="text-sm text-gray-400">Coins earned this month</p>
+        <div className="flex items-center gap-2 mt-2">
+          <span className="text-3xl font-bold text-[#FF6600]">842</span>
+          <span className="text-lg text-gray-400">coins</span>
+        </div>
+        <p className="text-xs text-green-500 mt-4">↑ 18% vs last month</p>
+        <div className="absolute right-4 bottom-2 text-5xl opacity-60">🪙</div>
+      </div>
+    </div>
+  );
+}
+==================================================
+DASHBOARD PAGES
+==================================================
+src/features/dashboard/pages/DashboardPage.tsx
+
+----- src/features/dashboard/pages/DashboardPage.tsx -----
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
+import { DashboardMetricCard } from "@/features/dashboard/components/DashboardMetricCard";
+import { PaymentCategoriesChart } from "@/features/dashboard/components/PaymentCategoriesChart";
+import { RewardsPromoCard } from "@/features/dashboard/components/RewardsPromoCard";
+import { SpendingChart } from "@/features/dashboard/components/SpendingChart";
+import {
+  TRANSACTIONS_SORT_OPTIONS,
+  TransactionsTable,
+} from "@/features/dashboard/components/TransactionsTable";
+import {
+  TransactionsFilters,
+  type TransactionsFiltersValue,
+} from "@/features/dashboard/components/TransactionsFilters";
+import { useRewardBalance } from "@/features/dashboard/hooks/useRewardBalance";
+import { useRewardsCatalog } from "@/features/dashboard/hooks/useRewardsCatalog";
+import { useTransactionsBulk } from "@/features/dashboard/hooks/useTransactionsBulk";
+import {
+  DEFAULT_ANALYTICS_PERIOD,
+  getPeriodDateRange,
+  getPeriodOption,
+} from "@/features/dashboard/utils/period";
+import {
+  applyClientFilters,
+  buildCategoryBreakdownFromTransactions,
+  buildTrendFromTransactions,
+  getDateRangeForTrendLabel,
+} from "@/features/dashboard/utils/trend";
+import { useFilteredSummary } from "@/features/dashboard/utils/useFilteredSummary";
+
+const PAGE_SIZE = 10;
+
+const EMPTY_FILTERS: TransactionsFiltersValue = {
+  search: "",
+  category: "",
+  status: "",
+  minAmount: "",
+  maxAmount: "",
+  startDate: "",
+  endDate: "",
+};
+
+/**
+ * The whole dashboard is driven by one bulk transaction fetch per date
+ * range (useTransactionsBulk) — search/category/status/amount filters,
+ * sorting, and pagination are all applied in-memory from that set. This is
+ * what makes the charts, metric cards, and table all react together to
+ * search/filter changes and to clicking a chart point/slice: they all read
+ * from the same filtered+sorted array, just sliced differently.
+ */
+export function DashboardPage() {
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState<TransactionsFiltersValue>(EMPTY_FILTERS);
+  const [page, setPage] = useState(1);
+  const [sortValue, setSortValue] = useState(TRANSACTIONS_SORT_OPTIONS[0].value);
+  const [period, setPeriod] = useState(DEFAULT_ANALYTICS_PERIOD.value);
+
+  const sortOption =
+    TRANSACTIONS_SORT_OPTIONS.find((option) => option.value === sortValue) ??
+    TRANSACTIONS_SORT_OPTIONS[0];
+
+  const periodOption = getPeriodOption(period);
+  // Determine the effective date range for the API call.
+// If the user has manually set a start or end date, use those instead of the period selector.
+const effectiveDateRange = useMemo(() => {
+  if (filters.startDate || filters.endDate) {
+    return {
+      start_date: filters.startDate || undefined,
+      end_date: filters.endDate || undefined,
+    };
+  }
+  return getPeriodDateRange(period);
+}, [filters.startDate, filters.endDate, period]);
+
+  // Debounce the search text so the *derived* views don't thrash on every
+  // keystroke's intermediate value. This no longer gates a network request
+  // (there isn't one per keystroke) — it just smooths the recompute.
+  const debouncedSearch = useDebouncedValue(filters.search, 150);
+
+  // One bulk fetch per date range (period selector), cached by React Query.
+  // Search/category/status/amount/sort/page never trigger a new request —
+  // they're all applied client-side below — which is what keeps typing and
+  // chart clicks instant even with a large transaction volume.
+  const {
+    data: bulkData,
+    isLoading: isBulkLoading,
+    isFetching: isBulkFetching,
+    isError: isBulkError,
+  } = useTransactionsBulk(effectiveDateRange);
+
+  const bulkTransactions = useMemo(() => bulkData?.items ?? [], [bulkData]);
+
+  const effectiveFilters = useMemo(
+    () => ({ ...filters, search: debouncedSearch }),
+    [filters, debouncedSearch],
+  );
+
+  // The single source of truth for "what matches the current filters" —
+  // charts, metric cards, and the table all read from this one filtered
+  // view instead of drifting out of sync with each other.
+  const summary = useFilteredSummary(bulkTransactions, effectiveFilters);
+
+  const sortedTransactions = useMemo(() => {
+    const sorted = [...summary.filteredTransactions];
+
+    sorted.sort((a, b) => {
+      const direction = sortOption.sortOrder === "asc" ? 1 : -1;
+
+      if (sortOption.sortBy === "amount") {
+        return (a.amount - b.amount) * direction;
+      }
+
+      return (
+        (new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()) *
+        direction
+      );
+    });
+
+    return sorted;
+  }, [summary.filteredTransactions, sortOption]);
+
+  const totalTransactions = sortedTransactions.length;
+  const totalPages = Math.max(1, Math.ceil(totalTransactions / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedTransactions = useMemo(
+    () =>
+      sortedTransactions.slice(
+        (safePage - 1) * PAGE_SIZE,
+        safePage * PAGE_SIZE,
+      ),
+    [sortedTransactions, safePage],
+  );
+
+  const {
+    data: rewardBalance,
+    isLoading: isRewardBalanceLoading,
+    isError: isRewardBalanceError,
+  } = useRewardBalance();
+
+  const { data: rewardsCatalog } = useRewardsCatalog();
+
+  const spendingData = useMemo(
+    () =>
+      buildTrendFromTransactions(
+        summary.filteredTransactions,
+        periodOption.granularity,
+      ),
+    [summary.filteredTransactions, periodOption.granularity],
+  );
+
+  // Category options for the filter dropdown come from the full bulk set
+  // (not the filtered one) so picking a category never removes other
+  // categories from the list.
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(new Set(bulkTransactions.map((t) => t.category))).sort(),
+    [bulkTransactions],
+  );
+
+  const chartFilters = useMemo(
+    () => ({ ...effectiveFilters, category: '' }),
+    [effectiveFilters]
+  );
+
+  const chartFilteredTransactions = useMemo(
+    () => applyClientFilters(bulkTransactions, chartFilters),
+    [bulkTransactions, chartFilters]
+  );
+
+  const chartCategoryBreakdown = useMemo(
+    () => buildCategoryBreakdownFromTransactions(chartFilteredTransactions),
+    [chartFilteredTransactions]
+  );
+
+  function handleFiltersChange(next: TransactionsFiltersValue) {
+    setFilters(next);
+    setPage(1);
+  }
+
+  function handleClearFilters() {
+    setFilters(EMPTY_FILTERS);
+    setPage(1);
+  }
+
+  function handleSortChange(value: string) {
+    setSortValue(value);
+    setPage(1);
+  }
+
+  // Clicking a trend point narrows every derived view (table, metrics,
+  // donut) to that month/year's date range.
+  function handleTrendPointClick(label: string) {
+    const range = getDateRangeForTrendLabel(label);
+    if (!range) return;
+
+    setFilters((prev) => ({
+      ...prev,
+      startDate: range.startDate,
+      endDate: range.endDate,
+    }));
+    setPage(1);
+  }
+
+  // Clicking a category slice/legend row narrows the table to that
+  // category — clicking the already-selected category clears it again.
+  function handleCategoryClick(category: string) {
+    setFilters((prev) => ({
+      ...prev,
+      category: prev.category === category ? "" : category,
+    }));
+    setPage(1);
+  }
+
+  // Only the bulk fetch (which everything derives from) and reward balance
+  // gate the whole page. There's no separate transactions request anymore,
+  // so there's no second loading/error state to reconcile against this one.
+  if (isBulkLoading || isRewardBalanceLoading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <p className="text-sm text-white/60">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (isBulkError || isRewardBalanceError) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <p className="text-sm text-red-400">Unable to load dashboard data.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-[1440px] space-y-6">
+      <DashboardHeader
+        userName="John"
+        coinBalance={rewardBalance?.balance ?? 0}
+        notificationCount={3}
+      />
+
+      <section
+        aria-label="Financial overview"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      >
+        <DashboardMetricCard
+          title="Total spent"
+          value={`₹${summary.totalSpend.toLocaleString("en-IN", {
+            maximumFractionDigits: 0,
+          })}`}
+          icon="spent"
+        />
+
+        <DashboardMetricCard
+          title="Successful payments"
+          value={summary.successfulTransactions.toLocaleString("en-IN")}
+          icon="payments"
+        />
+
+        <DashboardMetricCard
+          title="Coins earned"
+          value={summary.coinsEarned.toLocaleString("en-IN")}
+          icon="coins"
+        />
+
+        <DashboardMetricCard
+          title="Average payment"
+          value={
+            summary.successfulTransactions > 0
+              ? `₹${Math.round(
+                  summary.totalSpend / summary.successfulTransactions,
+                ).toLocaleString("en-IN")}`
+              : "₹0"
+          }
+          icon="average"
+        />
+      </section>
+
+      <section
+        aria-label="Spending breakdown"
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+      >
+        <PaymentCategoriesChart
+          categories={chartCategoryBreakdown}        
+          period={period}
+          onPeriodChange={setPeriod}
+          isFetching={isBulkFetching}
+          onCategoryClick={handleCategoryClick}
+          selectedCategory={filters.category}     
+        />
+        <SpendingChart
+          data={spendingData}
+          period={period}
+          onPeriodChange={setPeriod}
+          isFetching={isBulkFetching}
+          onPointClick={handleTrendPointClick}
+        />
+      </section>
+
+      <TransactionsFilters
+        value={filters}
+        categories={categoryOptions}
+        onChange={handleFiltersChange}
+        onClearAll={handleClearFilters}
+      />
+
+      <section
+        aria-label="Transactions and rewards"
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]"
+      >
+        <TransactionsTable
+          transactions={pagedTransactions}
+          total={totalTransactions}
+          page={safePage}
+          limit={PAGE_SIZE}
+          totalPages={totalPages}
+          sortValue={sortValue}
+          onSortChange={handleSortChange}
+          onPageChange={setPage}
+          isLoading={isBulkLoading}
+          isFetching={isBulkFetching}
+          isError={isBulkError}
+        />
+
+        <RewardsPromoCard
+          rewards={rewardsCatalog?.rewards ?? []}
+          onExploreRewards={() => navigate("/rewards")}
+        />
+      </section>
+    </div>
+  );
+}
+
+==================================================
+ENV FILES
+==================================================
+./.env
+
+==================================================
+TSCONFIG
+==================================================
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ]
+}
+
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}
+
+==================================================
+VITE CONFIG
+==================================================
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import path from "node:path";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": path.resolve(import.meta.dirname, "./src"),
+    },
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://alpha-vault-backend-a97d.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
+});
+==================================================
+ESLINT
+==================================================
+import eslint from "@eslint/js";
+import prettier from "eslint-config-prettier";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import tanstackQuery from "@tanstack/eslint-plugin-query";
+
+export default tseslint.config(
+  {
+    ignores: [
+      "dist/**",
+      "coverage/**",
+      "node_modules/**",
+      "playwright-report/**",
+      "test-results/**",
+      "e2e/**",
+      "*.config.ts",
+      "*.config.js",
+    ],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2022,
+      },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      "@tanstack/query": tanstackQuery,
+    },
+    rules: {
+      ...reactHooks.configs["recommended-latest"].rules,
+      ...tanstackQuery.configs["flat/recommended"].rules,
+      "react-refresh/only-export-components": [
+        "warn",
+        {
+          allowConstantExport: true,
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/**/*.{js,jsx,mjs,cjs}"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.es2022,
+      },
+    },
+  },
+  prettier,
+);
+
+==================================================
+CURRENT GIT STATUS
+==================================================
+ M src/features/rewards/pages/RewardsPage.tsx
+ M vite.config.ts
+?? project-check.txt
+?? src/features/rewards/api.ts
+?? src/features/rewards/components/FilterTabs.tsx
+?? src/features/rewards/components/RecentRedemptions.tsx
+?? src/features/rewards/components/RewardCard.tsx
+?? src/features/rewards/components/StateCards.tsx
+?? src/features/rewards/types.ts

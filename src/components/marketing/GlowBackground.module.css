@@ -1,0 +1,45 @@
+.glow {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 900px;
+  height: 900px;
+  max-width: 160vw;
+  max-height: 160vw;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    var(--color-accent-start) 0%,
+    var(--color-accent-end) 35%,
+    transparent 70%
+  );
+  filter: blur(120px);
+  opacity: 0.32;
+  animation: pulse 8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.26;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
+}
